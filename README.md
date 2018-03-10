@@ -2,7 +2,7 @@
 
 # flutter_sparkline
 
-Beautiful sparkline charts for flutter.
+Beautiful sparkline charts for Flutter.
 
 ### Todo:
 
