@@ -17,7 +17,7 @@ Beautiful sparkline charts for flutter.
 - [ ] animate drawing a single sparkline
 - [ ] gesture detector to select closest point to tap
 - [ ] baseline
-- [ ] different fill modes [above/below]
+- [ ] different fill modes [above/below/none]
 - [ ] fix edge points overflowing by offsetting by lineWidth
 - [ ] better corner rounding
 - [ ] axis labels
