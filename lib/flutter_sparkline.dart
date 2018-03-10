@@ -16,12 +16,17 @@ List<double> _generateRandomData(int count) {
 }
 
 class Sparkline extends StatelessWidget {
-  final List<double> data = _generateRandomData(5);
+  Sparkline({
+    this.lineWidth = 5.0,
+    this.lineColor = Colors.lightBlue,
+    this.sharpCorners = false,
+  });
 
   final double lineWidth;
   final Color lineColor;
+  final bool sharpCorners;
 
-  Sparkline({this.lineWidth = 15.0, this.lineColor = Colors.green});
+  final List<double> data = _generateRandomData(15);
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +39,7 @@ class Sparkline extends StatelessWidget {
           data,
           lineWidth: lineWidth,
           lineColor: lineColor,
+          sharpCorners: sharpCorners,
         ),
       ),
     );
@@ -45,12 +51,14 @@ class _SparklinePainter extends CustomPainter {
     this.dataPoints, {
     @required this.lineWidth,
     @required this.lineColor,
+    @required this.sharpCorners,
   })  : _max = dataPoints.reduce(math.max),
         _min = dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
   final double lineWidth;
   final Color lineColor;
+  final bool sharpCorners;
 
   final double _max;
   final double _min;
@@ -81,6 +89,7 @@ class _SparklinePainter extends CustomPainter {
       ..strokeWidth = lineWidth
       ..color = lineColor
       ..strokeCap = StrokeCap.round
+      ..strokeJoin = sharpCorners ? StrokeJoin.miter : StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     canvas.drawPath(path, paint);
