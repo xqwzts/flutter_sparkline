@@ -5,16 +5,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-math.Random random = new math.Random();
-
-List<double> _generateRandomData(int count) {
-  List<double> result = <double>[];
-  for (int i = 0; i < count; i++) {
-    result.add(random.nextDouble() * 100);
-  }
-  return result;
-}
-
 /// A widget that draws a sparkline chart.
 ///
 /// By default, the sparkline is sized to fit its container. If the
@@ -23,14 +13,17 @@ List<double> _generateRandomData(int count) {
 class Sparkline extends StatelessWidget {
   Sparkline({
     Key key,
+    @required this.data,
     this.lineWidth = 2.0,
     this.lineColor = Colors.lightBlue,
     this.sharpCorners = false,
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
     this.fallbackHeight = 100.0,
     this.fallbackWidth = 300.0,
-  }) : super(key: key);
+  })  : assert(data != null),
+        super(key: key);
 
+  final List<double> data;
   final double lineWidth;
   final Color lineColor;
   final bool sharpCorners;
@@ -51,8 +44,6 @@ class Sparkline extends StatelessWidget {
   ///
   ///  * [fallbackWidth], the same but horizontally.
   final double fallbackHeight;
-
-  final List<double> data = _generateRandomData(25);
 
   @override
   Widget build(BuildContext context) {
