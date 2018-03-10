@@ -4,6 +4,8 @@
 
 Beautiful sparkline charts for Flutter.
 
+![screenshot](/screenshots/sparkline.png)
+
 ### Todo:
 
 - [x] simple sparkline
