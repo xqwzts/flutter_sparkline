@@ -20,11 +20,13 @@ class Sparkline extends StatelessWidget {
     this.lineWidth = 5.0,
     this.lineColor = Colors.lightBlue,
     this.sharpCorners = false,
+    this.fillColor = Colors.deepPurple,
   });
 
   final double lineWidth;
   final Color lineColor;
   final bool sharpCorners;
+  final Color fillColor;
 
   final List<double> data = _generateRandomData(15);
 
@@ -40,6 +42,7 @@ class Sparkline extends StatelessWidget {
           lineWidth: lineWidth,
           lineColor: lineColor,
           sharpCorners: sharpCorners,
+          fillColor: fillColor,
         ),
       ),
     );
@@ -52,13 +55,15 @@ class _SparklinePainter extends CustomPainter {
     @required this.lineWidth,
     @required this.lineColor,
     @required this.sharpCorners,
+    @required this.fillColor,
   })  : _max = dataPoints.reduce(math.max),
         _min = dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
   final double lineWidth;
-  final Color lineColor;
   final bool sharpCorners;
+  final Color lineColor;
+  final Color fillColor;
 
   final double _max;
   final double _min;
@@ -91,6 +96,18 @@ class _SparklinePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = sharpCorners ? StrokeJoin.miter : StrokeJoin.round
       ..style = PaintingStyle.stroke;
+
+    if (fillColor != null) {
+      Path fillPath = new Path()..addPath(path, Offset.zero);
+      fillPath.lineTo(size.width, size.height);
+      fillPath.lineTo(0.0, size.height);
+      fillPath.close();
+      Paint fillPaint = new Paint()
+      ..strokeWidth = 0.0
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+      canvas.drawPath(fillPath, fillPaint);
+    }
 
     canvas.drawPath(path, paint);
   }

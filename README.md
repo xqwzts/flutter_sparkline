@@ -7,11 +7,12 @@ Beautiful sparkline charts for flutter.
 ### Todo:
 
 - [x] simple sparkline
-- [ ] custom line width
-- [ ] custom line color 
-- [ ] optional rounded corners
+- [x] custom line width
+- [x] custom line color 
+- [x] optional rounded corners
+- [x] fill
 - [ ] animate between two sparklines
 - [ ] animate drawing a single sparkline
 - [ ] gesture detector to select closest point to tap
-- [ ] fill
 - [ ] baseline
+- [ ] different fill modes [above/below]
