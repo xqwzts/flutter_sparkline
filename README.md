@@ -13,7 +13,7 @@ Beautiful sparkline charts for Flutter.
 - [x] custom line color 
 - [x] optional rounded corners
 - [x] fill
-- [ ] embiggen individual points/change color
+- [x] embiggen individual points/change color
 - [ ] optional end arrow
 - [ ] animate between two sparklines
 - [ ] animate drawing a single sparkline
