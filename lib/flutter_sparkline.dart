@@ -45,6 +45,8 @@ enum PointsMode {
 /// sparkline is in an unbounded space, it will size itself according to the
 /// given [fallbackWidth] and [fallbackHeight].
 class Sparkline extends StatelessWidget {
+
+  /// Creates a widget that represents provided [data] in a Sparkline chart.
   Sparkline({
     Key key,
     @required this.data,
@@ -61,6 +63,9 @@ class Sparkline extends StatelessWidget {
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
+        assert(pointsMode != null),
+        assert(pointSize != null),
+        assert(pointColor != null),
         assert(sharpCorners != null),
         assert(fillMode != null),
         assert(fillColor != null),
@@ -68,8 +73,22 @@ class Sparkline extends StatelessWidget {
         assert(fallbackWidth != null),
         super(key: key);
 
+  /// List of values to be represented by the sparkline.
+  ///
+  /// Each data entry represents an individual point on the chart, with a path
+  /// drawn connecting the consecutive points to form the sparkline.
+  ///
+  /// The values are normalized to fit within the bounds of the chart.
   final List<double> data;
+
+  /// The width of the sparkline.
+  ///
+  /// Defaults to 2.0.
   final double lineWidth;
+
+  /// The color of the sparkline.
+  ///
+  /// Defaults to Colors.lightBlue.
   final Color lineColor;
 
   /// Determines how individual data points should be drawn over the sparkline.
@@ -84,9 +103,13 @@ class Sparkline extends StatelessWidget {
 
   /// The color used when drawing individual data points over the sparkline.
   ///
-  /// Defaults to [Colors.lightBlue[800]].
+  /// Defaults to Colors.lightBlue[800].
   final Color pointColor;
 
+  /// Determines if the sparkline path should have sharp corners where two
+  /// segments intersect.
+  ///
+  /// Defaults to false.
   final bool sharpCorners;
 
   /// Determines the area that should be filled with [fillColor].
@@ -96,7 +119,7 @@ class Sparkline extends StatelessWidget {
 
   /// The fill color used in the chart, as determined by [fillMode].
   ///
-  /// Defaults to [Colors.lightBlue[200]].
+  /// Defaults to Colors.lightBlue[200].
   final Color fillColor;
 
   /// The width to use when the sparkline is in a situation with an unbounded
@@ -243,6 +266,14 @@ class _SparklinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparklinePainter old) {
-    return dataPoints != old.dataPoints;
+    return dataPoints != old.dataPoints ||
+        lineWidth != old.lineWidth ||
+        lineColor != old.lineColor ||
+        sharpCorners != old.sharpCorners ||
+        fillMode != old.fillMode ||
+        fillColor != old.fillColor ||
+        pointsMode != old.pointsMode ||
+        pointSize != old.pointSize ||
+        pointColor != old.pointColor;
   }
 }
