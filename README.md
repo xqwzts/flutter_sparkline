@@ -24,3 +24,4 @@ Beautiful sparkline charts for Flutter.
 - [ ] better corner rounding
 - [ ] axis labels
 - [ ] gradient shader on line paint
+- [ ] multiple overlapping sparklines on a shared axis
