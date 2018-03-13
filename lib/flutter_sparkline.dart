@@ -20,15 +20,26 @@ enum FillMode {
   below,
 }
 
+/// Strategy used when drawing individual data points over the sparkline.
+enum PointsMode {
+  /// Do not draw individual points.
+  none,
+
+  /// Draw all the points in the data set.
+  all,
+
+  /// Draw only the last point in the data set.
+  last,
+}
+
 /// A widget that draws a sparkline chart.
 ///
 /// The area above or below the sparkline can be filled with the provided
 /// [fillColor] by setting the desired [fillMode].
 ///
-/// If neither [pointSize] nor [pointColor] are specified then individual data
-/// points will not be drawn over the sparkline. If only one of them is provided
-/// then the other property will default to the corresponding line-value:
-/// [lineWidth] for the size and [lineColor] for the color.
+/// [pointsMode] controls how individual points are drawn over the sparkline
+/// at the provided data point. Their appearance is determined by the
+/// [pointSize] and [pointColor] properties.
 ///
 /// By default, the sparkline is sized to fit its container. If the
 /// sparkline is in an unbounded space, it will size itself according to the
@@ -39,8 +50,9 @@ class Sparkline extends StatelessWidget {
     @required this.data,
     this.lineWidth = 2.0,
     this.lineColor = Colors.lightBlue,
-    this.pointSize,
-    this.pointColor,
+    this.pointsMode = PointsMode.none,
+    this.pointSize = 4.0,
+    this.pointColor = const Color(0xFF0277BD), //Colors.lightBlue[800]
     this.sharpCorners = false,
     this.fillMode = FillMode.none,
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
@@ -60,22 +72,19 @@ class Sparkline extends StatelessWidget {
   final double lineWidth;
   final Color lineColor;
 
+  /// Determines how individual data points should be drawn over the sparkline.
+  ///
+  /// Defaults to [PointsMode.none].
+  final PointsMode pointsMode;
+
   /// The size to use when drawing individual data points over the sparkline.
   ///
-  /// At least one of [pointSize] or [pointColor] must be set, or data points
-  /// will not be drawn.
-  ///
-  /// If [pointSize] is set, but [pointColor] is not, then [lineColor] will be
-  /// used as the color.
+  /// Defaults to 4.0.
   final double pointSize;
 
   /// The color used when drawing individual data points over the sparkline.
   ///
-  /// At least one of [pointSize] or [pointColor] must be set, or data points
-  /// will not be drawn.
-  ///
-  /// If [pointColor] is set, but [pointSize] is not, then [lineWidth] will be
-  /// used as the size.
+  /// Defaults to [Colors.lightBlue[800]].
   final Color pointColor;
 
   final bool sharpCorners;
@@ -87,7 +96,7 @@ class Sparkline extends StatelessWidget {
 
   /// The fill color used in the chart, as determined by [fillMode].
   ///
-  /// Defaults to Colors.lightBlue[200].
+  /// Defaults to [Colors.lightBlue[200]].
   final Color fillColor;
 
   /// The width to use when the sparkline is in a situation with an unbounded
@@ -120,6 +129,7 @@ class Sparkline extends StatelessWidget {
           sharpCorners: sharpCorners,
           fillMode: fillMode,
           fillColor: fillColor,
+          pointsMode: pointsMode,
           pointSize: pointSize,
           pointColor: pointColor,
         ),
@@ -136,21 +146,25 @@ class _SparklinePainter extends CustomPainter {
     @required this.sharpCorners,
     @required this.fillMode,
     @required this.fillColor,
-    this.pointSize,
-    this.pointColor,
+    @required this.pointsMode,
+    @required this.pointSize,
+    @required this.pointColor,
   })  : _max = dataPoints.reduce(math.max),
-        _min = dataPoints.reduce(math.min),
-        _drawPoints = pointSize != null || pointColor != null;
+        _min = dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
+
   final double lineWidth;
   final Color lineColor;
+
   final bool sharpCorners;
+
   final FillMode fillMode;
   final Color fillColor;
+
+  final PointsMode pointsMode;
   final double pointSize;
   final Color pointColor;
-  final bool _drawPoints;
 
   final double _max;
   final double _min;
@@ -172,7 +186,11 @@ class _SparklinePainter extends CustomPainter {
       double y =
           height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2;
 
-      if (_drawPoints) {
+      if (pointsMode == PointsMode.all) {
+        points.add(new Offset(x, y));
+      }
+
+      if (pointsMode == PointsMode.last && i == dataPoints.length - 1) {
         points.add(new Offset(x, y));
       }
 
@@ -214,11 +232,11 @@ class _SparklinePainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    if (_drawPoints) {
+    if (points.isNotEmpty) {
       Paint pointsPaint = new Paint()
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = pointSize ?? lineWidth
-        ..color = pointColor ?? lineColor;
+        ..strokeWidth = pointSize
+        ..color = pointColor;
       canvas.drawPoints(ui.PointMode.points, points, pointsPaint);
     }
   }

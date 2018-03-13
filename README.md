@@ -14,7 +14,7 @@ Beautiful sparkline charts for Flutter.
 - [x] optional rounded corners
 - [x] fill
 - [x] embiggen individual points/change color
-- [ ] optional end arrow
+- [x] different points modes [all/last/none]
 - [ ] animate between two sparklines
 - [ ] animate drawing a single sparkline
 - [ ] gesture detector to select closest point to tap
