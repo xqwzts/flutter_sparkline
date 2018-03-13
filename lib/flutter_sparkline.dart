@@ -157,21 +157,27 @@ class _SparklinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double widthNormalizer = size.width / (dataPoints.length - 1);
-    final double heightNormalizer = size.height / (_max - _min);
+    final double width = size.width - lineWidth;
+    final double height = size.height - lineWidth;
+    final double widthNormalizer = width / (dataPoints.length - 1);
+    final double heightNormalizer = height / (_max - _min);
 
     final Path path = new Path();
     final List<Offset> points = <Offset>[];
 
+    Offset startPoint;
+
     for (int i = 0; i < dataPoints.length; i++) {
-      double x = i * widthNormalizer;
-      double y = size.height - (dataPoints[i] - _min) * heightNormalizer;
+      double x = i * widthNormalizer + lineWidth / 2;
+      double y =
+          height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2;
 
       if (_drawPoints) {
         points.add(new Offset(x, y));
       }
 
       if (i == 0) {
+        startPoint = new Offset(x, y);
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
@@ -188,11 +194,15 @@ class _SparklinePainter extends CustomPainter {
     if (fillMode != FillMode.none) {
       Path fillPath = new Path()..addPath(path, Offset.zero);
       if (fillMode == FillMode.below) {
+        fillPath.relativeLineTo(lineWidth / 2, 0.0);
         fillPath.lineTo(size.width, size.height);
         fillPath.lineTo(0.0, size.height);
+        fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       } else if (fillMode == FillMode.above) {
+        fillPath.relativeLineTo(lineWidth / 2, 0.0);
         fillPath.lineTo(size.width, 0.0);
         fillPath.lineTo(0.0, 0.0);
+        fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       }
       fillPath.close();
       Paint fillPaint = new Paint()

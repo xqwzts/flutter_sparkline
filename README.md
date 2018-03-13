@@ -20,7 +20,7 @@ Beautiful sparkline charts for Flutter.
 - [ ] gesture detector to select closest point to tap
 - [ ] baseline
 - [x] different fill modes [above/below/none]
-- [ ] fix edge points overflowing by offsetting by lineWidth
+- [x] fix edge points overflowing by offsetting by lineWidth
 - [ ] better corner rounding
 - [ ] axis labels
 - [ ] gradient shader on line paint
