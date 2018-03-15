@@ -31,6 +31,15 @@ enum PointsMode {
 }
 
 /// A widget that draws a sparkline chart.
+/// 
+/// Represents the given [data] in a sparkline chart that spans the available
+/// space.
+/// 
+/// By default only the sparkline is drawn, with its looks defined by
+/// the [lineWidth] and [lineColor] properties.
+/// 
+/// The corners between two segments of the sparkline can be made sharper by
+/// setting [sharpCorners] to true.
 ///
 /// The area above or below the sparkline can be filled with the provided
 /// [fillColor] by setting the desired [fillMode].
