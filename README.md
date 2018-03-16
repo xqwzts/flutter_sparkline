@@ -4,7 +4,7 @@
 
 Beautiful sparkline charts for Flutter.
 
-![screenshot](/screenshots/sparkline.png)
+![screenshot](screenshots/sparkline.png)
 
 ## Installation
 
@@ -38,7 +38,7 @@ void main() {
 }
 ```
 
-![example screenshot](/screenshots/example_base.png)
+![base example screenshot](screenshots/example_base.png)
 
 
 ## Customization
@@ -60,7 +60,7 @@ new Sparkline(
 );
 ```
 
-![exmaple screenshot](/screenshots/example_lineopts.png)
+![lineopts example screenshot](screenshots/example_lineopts.png)
 
 ---
 
@@ -89,7 +89,7 @@ new Sparkline(
 );
 ```
 
-![all points example screenshot](/screenshots/example_points_all.png)
+![all points example screenshot](screenshots/example_points_all.png)
 
 ```dart
 new Sparkline(
@@ -100,7 +100,7 @@ new Sparkline(
 );
 ```
 
-![last point example screenshot](/screenshots/example_points_last.png)
+![last point example screenshot](screenshots/example_points_last.png)
 
 ---
 
@@ -127,7 +127,7 @@ new Sparkline(
 );
 ```
 
-![fill below example screenshot](/screenshots/example_fill_below.png)
+![fill below example screenshot](screenshots/example_fill_below.png)
 
 ```dart
 new Sparkline(
@@ -137,7 +137,7 @@ new Sparkline(
 );
 ```
 
-![fill above example screenshot](/screenshots/example_fill_above.png)
+![fill above example screenshot](screenshots/example_fill_above.png)
 
 ---
 
