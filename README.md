@@ -1,4 +1,4 @@
-[pub badge]
+[![pub package](https://img.shields.io/pub/v/flutter_sparkline.svg)](https://pub.dartlang.org/packages/flutter_sparkline)
 
 # flutter_sparkline
 
@@ -8,7 +8,7 @@ Beautiful sparkline charts for Flutter.
 
 ## Installation
 
-Install the latest version from pub.
+Install the latest version [from pub](https://pub.dartlang.org/packages/flutter_sparkline#-installing-tab-).
 
 ## Quick Start
 
