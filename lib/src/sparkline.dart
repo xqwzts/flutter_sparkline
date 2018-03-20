@@ -31,13 +31,13 @@ enum PointsMode {
 }
 
 /// A widget that draws a sparkline chart.
-/// 
+///
 /// Represents the given [data] in a sparkline chart that spans the available
 /// space.
-/// 
+///
 /// By default only the sparkline is drawn, with its looks defined by
 /// the [lineWidth] and [lineColor] properties.
-/// 
+///
 /// The corners between two segments of the sparkline can be made sharper by
 /// setting [sharpCorners] to true.
 ///
@@ -66,7 +66,8 @@ class Sparkline extends StatelessWidget {
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
     this.fallbackHeight = 100.0,
     this.fallbackWidth = 300.0,
-  })  : assert(data != null),
+  })
+      : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
         assert(pointsMode != null),
@@ -178,7 +179,8 @@ class _SparklinePainter extends CustomPainter {
     @required this.pointsMode,
     @required this.pointSize,
     @required this.pointColor,
-  })  : _max = dataPoints.reduce(math.max),
+  })
+      : _max = dataPoints.reduce(math.max),
         _min = dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
