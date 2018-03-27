@@ -1,3 +1,7 @@
+## [0.0.4] - 2018-04-27
+
+* Add lineGradient and fillGradient options.
+
 ## [0.0.3] - 2018-04-17
 
 * Add basic example

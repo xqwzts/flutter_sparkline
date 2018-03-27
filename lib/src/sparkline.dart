@@ -36,13 +36,13 @@ enum PointsMode {
 /// space.
 ///
 /// By default only the sparkline is drawn, with its looks defined by
-/// the [lineWidth] and [lineColor] properties.
+/// the [lineWidth], [lineColor], and [lineGradient] properties.
 ///
 /// The corners between two segments of the sparkline can be made sharper by
 /// setting [sharpCorners] to true.
 ///
 /// The area above or below the sparkline can be filled with the provided
-/// [fillColor] by setting the desired [fillMode].
+/// [fillColor] or [fillGradient] by setting the desired [fillMode].
 ///
 /// [pointsMode] controls how individual points are drawn over the sparkline
 /// at the provided data point. Their appearance is determined by the
@@ -58,16 +58,17 @@ class Sparkline extends StatelessWidget {
     @required this.data,
     this.lineWidth = 2.0,
     this.lineColor = Colors.lightBlue,
+    this.lineGradient,
     this.pointsMode = PointsMode.none,
     this.pointSize = 4.0,
     this.pointColor = const Color(0xFF0277BD), //Colors.lightBlue[800]
     this.sharpCorners = false,
     this.fillMode = FillMode.none,
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
+    this.fillGradient,
     this.fallbackHeight = 100.0,
     this.fallbackWidth = 300.0,
-  })
-      : assert(data != null),
+  })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
         assert(pointsMode != null),
@@ -96,7 +97,14 @@ class Sparkline extends StatelessWidget {
   /// The color of the sparkline.
   ///
   /// Defaults to Colors.lightBlue.
+  ///
+  /// This is ignored if [lineGradient] is non-null.
   final Color lineColor;
+
+  /// A gradient to use when coloring the sparkline.
+  ///
+  /// If this is specified, [lineColor] has no effect.
+  final Gradient lineGradient;
 
   /// Determines how individual data points should be drawn over the sparkline.
   ///
@@ -127,7 +135,14 @@ class Sparkline extends StatelessWidget {
   /// The fill color used in the chart, as determined by [fillMode].
   ///
   /// Defaults to Colors.lightBlue[200].
+  ///
+  /// This is ignored if [fillGradient] is non-null.
   final Color fillColor;
+
+  /// A gradient to use when filling the chart, as determined by [fillMode].
+  ///
+  /// If this is specified, [fillColor] has no effect.
+  final Gradient fillGradient;
 
   /// The width to use when the sparkline is in a situation with an unbounded
   /// width.
@@ -156,9 +171,11 @@ class Sparkline extends StatelessWidget {
           data,
           lineWidth: lineWidth,
           lineColor: lineColor,
+          lineGradient: lineGradient,
           sharpCorners: sharpCorners,
           fillMode: fillMode,
           fillColor: fillColor,
+          fillGradient: fillGradient,
           pointsMode: pointsMode,
           pointSize: pointSize,
           pointColor: pointColor,
@@ -173,25 +190,28 @@ class _SparklinePainter extends CustomPainter {
     this.dataPoints, {
     @required this.lineWidth,
     @required this.lineColor,
+    this.lineGradient,
     @required this.sharpCorners,
     @required this.fillMode,
     @required this.fillColor,
+    this.fillGradient,
     @required this.pointsMode,
     @required this.pointSize,
     @required this.pointColor,
-  })
-      : _max = dataPoints.reduce(math.max),
+  })  : _max = dataPoints.reduce(math.max),
         _min = dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
 
   final double lineWidth;
   final Color lineColor;
+  final Gradient lineGradient;
 
   final bool sharpCorners;
 
   final FillMode fillMode;
   final Color fillColor;
+  final Gradient fillGradient;
 
   final PointsMode pointsMode;
   final double pointSize;
@@ -240,6 +260,11 @@ class _SparklinePainter extends CustomPainter {
       ..strokeJoin = sharpCorners ? StrokeJoin.miter : StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
+    if (lineGradient != null) {
+      final Rect lineRect = new Rect.fromLTWH(0.0, 0.0, width, height);
+      paint.shader = lineGradient.createShader(lineRect);
+    }
+
     if (fillMode != FillMode.none) {
       Path fillPath = new Path()..addPath(path, Offset.zero);
       if (fillMode == FillMode.below) {
@@ -254,10 +279,16 @@ class _SparklinePainter extends CustomPainter {
         fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       }
       fillPath.close();
+
       Paint fillPaint = new Paint()
         ..strokeWidth = 0.0
         ..color = fillColor
         ..style = PaintingStyle.fill;
+
+      if (fillGradient != null) {
+        final Rect fillRect = new Rect.fromLTWH(0.0, 0.0, width, height);
+        fillPaint.shader = fillGradient.createShader(fillRect);
+      }
       canvas.drawPath(fillPath, fillPaint);
     }
 
@@ -277,9 +308,11 @@ class _SparklinePainter extends CustomPainter {
     return dataPoints != old.dataPoints ||
         lineWidth != old.lineWidth ||
         lineColor != old.lineColor ||
+        lineGradient != old.lineGradient ||
         sharpCorners != old.sharpCorners ||
         fillMode != old.fillMode ||
         fillColor != old.fillColor ||
+        fillGradient != old.fillGradient ||
         pointsMode != old.pointsMode ||
         pointSize != old.pointSize ||
         pointColor != old.pointColor;
