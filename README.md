@@ -45,10 +45,11 @@ void main() {
 
 ### Sparkline
 
-| Property  | Default          |
-|-----------|:----------------:|
-| lineWidth | 2.0              |
-| lineColor | Colors.lightBlue |
+| Property     | Default          |
+|--------------|:----------------:|
+| lineWidth    | 2.0              |
+| lineColor    | Colors.lightBlue |
+| lineGradient | null             |
 
 Example:
 
@@ -61,6 +62,20 @@ new Sparkline(
 ```
 
 ![lineopts example screenshot](screenshots/example_lineopts.png)
+
+```dart
+new Sparkline(
+  data: data,
+  lineWidth: 10.0,
+  lineGradient: new LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Colors.purple[800], Colors.purple[200]],
+  ),
+);
+```
+
+![lineopts example screenshot](screenshots/example_line_gradient.png)
 
 ---
 
@@ -106,10 +121,11 @@ new Sparkline(
 
 ### Fill
 
-| Property  | Default               |
-|-----------|:---------------------:|
-| fillMode  | FillMode.none         |
-| fillColor | Colors.lightBlue[200] |
+| Property     | Default               |
+|--------------|:---------------------:|
+| fillMode     | FillMode.none         |
+| fillColor    | Colors.lightBlue[200] |
+| fillGradient | null                  |
 
 | FillMode       | Description                           |
 |:--------------:|---------------------------------------|
@@ -139,6 +155,20 @@ new Sparkline(
 
 ![fill above example screenshot](screenshots/example_fill_above.png)
 
+```dart
+new Sparkline(
+  data: data,
+  fillMode: FillMode.below,
+  fillGradient: new LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Colors.red[800], Colors.red[200]],
+  ),
+);
+```
+
+![fill above example screenshot](screenshots/example_fill_gradient.png)
+
 ---
 
 ### Todo:
@@ -158,6 +188,7 @@ new Sparkline(
 - [x] fix edge points overflowing by offsetting by lineWidth
 - [ ] better corner rounding
 - [ ] axis labels
-- [ ] gradient shader on line paint
+- [x] gradient shader on line paint
+- [x] gradient shader on fill paint
 - [ ] multiple overlapping sparklines on a shared axis
 - [ ] tests
