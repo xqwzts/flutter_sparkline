@@ -41,6 +41,11 @@ enum PointsMode {
 /// The corners between two segments of the sparkline can be made sharper by
 /// setting [sharpCorners] to true.
 ///
+/// Conversely, to smooth out the curve drawn even more, set [useCubicSmoothing]
+/// to true. The degree to which the cubic smoothing is applied can be changed
+/// using [cubicSmoothingFactor]. A good range for [cubicSmoothingFactor]
+/// is usually between 0.1 and 0.3.
+///
 /// The area above or below the sparkline can be filled with the provided
 /// [fillColor] or [fillGradient] by setting the desired [fillMode].
 ///
@@ -63,6 +68,8 @@ class Sparkline extends StatelessWidget {
     this.pointSize = 4.0,
     this.pointColor = const Color(0xFF0277BD), //Colors.lightBlue[800]
     this.sharpCorners = false,
+    this.useCubicSmoothing = false,
+    this.cubicSmoothingFactor = 0.15,
     this.fillMode = FillMode.none,
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
     this.fillGradient,
@@ -133,6 +140,20 @@ class Sparkline extends StatelessWidget {
   /// Defaults to false.
   final bool sharpCorners;
 
+  /// Determines if the sparkline path should use cubic beziers to smooth
+  /// the curve when drawing. Read more about the algorithm used, here:
+  ///
+  /// https://medium.com/@francoisromain/smooth-a-svg-path-with-cubic-bezier-curves-e37b49d46c74
+  ///
+  /// Defaults to false.
+  final bool useCubicSmoothing;
+
+  /// How aggressively the sparkline should apply cubic beziers to smooth
+  /// the curves. A good value is usually between 0.1 and 0.3.
+  ///
+  /// Defaults to 0.15.
+  final double cubicSmoothingFactor;
+
   /// Determines the area that should be filled with [fillColor].
   ///
   /// Defaults to [FillMode.none].
@@ -195,6 +216,8 @@ class Sparkline extends StatelessWidget {
           lineColor: lineColor,
           lineGradient: lineGradient,
           sharpCorners: sharpCorners,
+          useCubicSmoothing: useCubicSmoothing,
+          cubicSmoothingFactor: cubicSmoothingFactor,
           fillMode: fillMode,
           fillColor: fillColor,
           fillGradient: fillGradient,
@@ -220,6 +243,8 @@ class _SparklinePainter extends CustomPainter {
     @required this.lineColor,
     this.lineGradient,
     @required this.sharpCorners,
+    @required this.useCubicSmoothing,
+    @required this.cubicSmoothingFactor,
     @required this.fillMode,
     @required this.fillColor,
     this.fillGradient,
@@ -227,13 +252,15 @@ class _SparklinePainter extends CustomPainter {
     @required this.pointSize,
     @required this.pointColor,
     @required this.enableGridLines,
-    this.gridLineColor,
-    this.gridLineAmount,
-    this.gridLineWidth,
-    this.gridLineLabelColor,
-    this.labelPrefix
-    })  : _max = dataPoints.reduce(math.max),
-      _min = dataPoints.reduce(math.min);
+    @required this.gridLineColor,
+    @required this.gridLineAmount,
+    @required this.gridLineWidth,
+    @required this.gridLineLabelColor,
+    @required this.labelPrefix,
+    double max,
+    double min,
+  })  : _max = max != null ? max : dataPoints.reduce(math.max),
+        _min = min != null ? min : dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
 
@@ -242,6 +269,8 @@ class _SparklinePainter extends CustomPainter {
   final Gradient lineGradient;
 
   final bool sharpCorners;
+  final bool useCubicSmoothing;
+  final double cubicSmoothingFactor;
 
   final FillMode fillMode;
   final Color fillColor;
@@ -345,8 +374,24 @@ class _SparklinePainter extends CustomPainter {
     final Path path = new Path();
     path.moveTo(startPoint.dx, startPoint.dy);
 
-    for (int i = 1; i < normalized.length; i++) {
-      path.lineTo(normalized[i].dx, normalized[i].dy);
+    if (useCubicSmoothing) {
+      Offset a = normalized[0];
+      Offset b = normalized[0];
+      Offset c = normalized[1];
+      for (int i = 1; i < normalized.length; i++) {
+        double x1 = (c.dx - a.dx) * cubicSmoothingFactor + b.dx;
+        double y1 = (c.dy - a.dy) * cubicSmoothingFactor + b.dy;
+        a = b;
+        b = c;
+        c = normalized[math.min(normalized.length - 1, i + 1)];
+        double x2 = (a.dx - c.dx) * cubicSmoothingFactor + b.dx;
+        double y2 = (a.dy - c.dy) * cubicSmoothingFactor + b.dy;
+        path.cubicTo(x1, y1, x2, y2, b.dx, b.dy);
+      }
+    } else {
+      for (int i = 1; i < normalized.length; i++) {
+        path.lineTo(normalized[i].dx, normalized[i].dy);
+      }
     }
 
     Paint paint = new Paint()
@@ -416,6 +461,7 @@ class _SparklinePainter extends CustomPainter {
         gridLineColor != old.gridLineColor ||
         gridLineAmount != old.gridLineAmount ||
         gridLineWidth != old.gridLineWidth ||
-        gridLineLabelColor != old.gridLineLabelColor;
+        gridLineLabelColor != old.gridLineLabelColor ||
+        useCubicSmoothing != old.useCubicSmoothing;
   }
 }
