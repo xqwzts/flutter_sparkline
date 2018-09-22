@@ -298,10 +298,8 @@ class _SparklinePainter extends CustomPainter {
     final double height = size.height - lineWidth;
     final double heightNormalizer = height / (_max - _min);
 
-    final Path path = new Path();
     final List<Offset> points = <Offset>[];
-
-    Offset startPoint;
+    final List<Offset> normalized = <Offset>[];
 
     if (gridLineTextPainters.isEmpty) {
       update();
@@ -335,20 +333,20 @@ class _SparklinePainter extends CustomPainter {
       double y =
           height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2;
 
-      if (pointsMode == PointsMode.all) {
-        points.add(new Offset(x, y));
-      }
+      normalized.add(new Offset(x, y));
 
-      if (pointsMode == PointsMode.last && i == dataPoints.length - 1) {
-        points.add(new Offset(x, y));
+      if (pointsMode == PointsMode.all ||
+          (pointsMode == PointsMode.last && i == dataPoints.length - 1)) {
+        points.add(normalized[i]);
       }
+    }
 
-      if (i == 0) {
-        startPoint = new Offset(x, y);
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
+    Offset startPoint = normalized[0];
+    final Path path = new Path();
+    path.moveTo(startPoint.dx, startPoint.dy);
+
+    for (int i = 1; i < normalized.length; i++) {
+      path.lineTo(normalized[i].dx, normalized[i].dy);
     }
 
     Paint paint = new Paint()
