@@ -38,6 +38,9 @@ enum PointsMode {
 /// By default only the sparkline is drawn, with its looks defined by
 /// the [lineWidth], [lineColor], and [lineGradient] properties.
 ///
+/// The y-scale of the sparkline will be determined by using the [data]'s
+/// minimum and maximum value, unless overridden with [min] and/or [max].
+///
 /// The corners between two segments of the sparkline can be made sharper by
 /// setting [sharpCorners] to true.
 ///
@@ -81,6 +84,8 @@ class Sparkline extends StatelessWidget {
     this.gridLineWidth = 0.5,
     this.gridLineLabelColor = Colors.grey,
     this.labelPrefix = "\$",
+    this.max,
+    this.min,
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
@@ -203,6 +208,14 @@ class Sparkline extends StatelessWidget {
   /// Symbol prefix for grid line labels
   final String labelPrefix;
 
+  /// The maximum value for the rendering box. Will default to the largest
+  /// value in [data].
+  final double max;
+
+  /// The minimum value for the rendering box. Will default to the largest
+  /// value in [data].
+  final double min;
+
   @override
   Widget build(BuildContext context) {
     return new LimitedBox(
@@ -229,7 +242,9 @@ class Sparkline extends StatelessWidget {
           gridLineAmount: gridLineAmount,
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
-          labelPrefix: labelPrefix
+          labelPrefix: labelPrefix,
+          max: max,
+          min: min,
         ),
       ),
     );
