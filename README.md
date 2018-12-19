@@ -171,6 +171,20 @@ new Sparkline(
 
 ---
 
+### Smoothing
+
+```dart
+new Sparkline(
+  data: data,
+  useCubicSmoothing: true,
+  cubicSmoothingFactor: 0.2,
+),
+```
+
+![cubic smoothing example screenshot](screenshots/example_cubic_smoothing.png)
+
+---
+
 ### Todo:
 
 - [x] simple sparkline
@@ -186,7 +200,7 @@ new Sparkline(
 - [ ] baseline
 - [x] different fill modes [above/below/none]
 - [x] fix edge points overflowing by offsetting by lineWidth
-- [ ] better corner rounding
+- [x] better corner rounding
 - [ ] axis labels
 - [x] gradient shader on line paint
 - [x] gradient shader on fill paint
