@@ -370,7 +370,7 @@ class _SparklinePainter extends CustomPainter {
       }
     }
 
-    final double widthNormalizer = width / dataPoints.length;
+    final double widthNormalizer = width / (dataPoints.length - 1);
 
     for (int i = 0; i < dataPoints.length; i++) {
       double x = i * widthNormalizer + lineWidth / 2;
