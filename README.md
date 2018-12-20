@@ -169,6 +169,30 @@ new Sparkline(
 
 ![fill above example screenshot](screenshots/example_fill_gradient.png)
 
+### Grid Lines
+
+| Property               | Default               |
+|------------------------|:---------------------:|
+| enableGridLines        | false                 |
+| gridLineColor          | Colors.grey           |
+| gridLineLabelColor     | Colors.grey           |
+| gridLinelabelPrefix    | ""                    |
+| gridLineAmount         | 5                     |
+| gridLineWidth          | 0.5                   |
+| gridLineLabelPrecision | 3                     |
+
+Example:
+
+```dart
+new Sparkline(
+  data: data,
+  enableGridLines: true,
+  gridLineAmount: 3,
+),
+```
+
+![grid line example screenshot](screenshots/example_grid_lines.png)
+
 ---
 
 ### Todo:
