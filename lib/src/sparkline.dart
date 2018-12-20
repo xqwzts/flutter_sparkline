@@ -73,7 +73,8 @@ class Sparkline extends StatelessWidget {
     this.gridLineAmount = 5,
     this.gridLineWidth = 0.5,
     this.gridLineLabelColor = Colors.grey,
-    this.labelPrefix = "\$",
+    this.gridLinelabelPrefix = "",
+    this.gridLineLabelPrecision = 3
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
@@ -180,7 +181,10 @@ class Sparkline extends StatelessWidget {
   final double gridLineWidth;
 
   /// Symbol prefix for grid line labels
-  final String labelPrefix;
+  final String gridLinelabelPrefix;
+
+  /// Digit precision of grid line labels
+  final int gridLineLabelPrecision;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +210,8 @@ class Sparkline extends StatelessWidget {
           gridLineAmount: gridLineAmount,
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
-          labelPrefix: labelPrefix
+          gridLinelabelPrefix: gridLinelabelPrefix,
+          gridLineLabelPrecision: gridLineLabelPrecision
         ),
       ),
     );
@@ -231,7 +236,8 @@ class _SparklinePainter extends CustomPainter {
     this.gridLineAmount,
     this.gridLineWidth,
     this.gridLineLabelColor,
-    this.labelPrefix
+    this.gridLinelabelPrefix,
+    this.gridLineLabelPrecision
     })  : _max = dataPoints.reduce(math.max),
       _min = dataPoints.reduce(math.min);
 
@@ -259,7 +265,8 @@ class _SparklinePainter extends CustomPainter {
   final int gridLineAmount;
   final double gridLineWidth;
   final Color gridLineLabelColor;
-  final String labelPrefix;
+  final String gridLinelabelPrefix;
+  final int gridLineLabelPrecision;
 
   List<TextPainter> gridLineTextPainters = [];
 
@@ -270,18 +277,11 @@ class _SparklinePainter extends CustomPainter {
         // Label grid lines
         gridLineValue = _max - (((_max - _min) / (gridLineAmount - 1)) * i);
 
-        String gridLineText;
-        if (gridLineValue < 1) {
-          gridLineText = gridLineValue.toStringAsPrecision(4);
-        } else if (gridLineValue < 999) {
-          gridLineText = gridLineValue.toStringAsFixed(2);
-        } else {
-          gridLineText = gridLineValue.round().toString();
-        }
+        String gridLineText = gridLineValue.toStringAsPrecision(gridLineLabelPrecision);
 
         gridLineTextPainters.add(new TextPainter(
             text: new TextSpan(
-                text: labelPrefix + gridLineText,
+                text: gridLinelabelPrefix + gridLineText,
                 style: new TextStyle(
                     color: gridLineLabelColor,
                     fontSize: 10.0,
@@ -418,6 +418,8 @@ class _SparklinePainter extends CustomPainter {
         gridLineColor != old.gridLineColor ||
         gridLineAmount != old.gridLineAmount ||
         gridLineWidth != old.gridLineWidth ||
-        gridLineLabelColor != old.gridLineLabelColor;
+        gridLineLabelColor != old.gridLineLabelColor ||
+        gridLinelabelPrefix != old.gridLinelabelPrefix ||
+        gridLineLabelPrecision != old.gridLineLabelPrecision;
   }
 }
