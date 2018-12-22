@@ -74,6 +74,8 @@ class Sparkline extends StatelessWidget {
     this.gridLineWidth = 0.5,
     this.gridLineLabelColor = Colors.grey,
     this.labelPrefix = "\$",
+    this.enableThreshold = false,
+    this.thresholdSize = 0.3,
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
@@ -182,6 +184,12 @@ class Sparkline extends StatelessWidget {
   /// Symbol prefix for grid line labels
   final String labelPrefix;
 
+  /// Define if graph should have threshold
+  final bool enableThreshold;
+
+  /// size of default threshold (in Percent) 0.0 ~ 1.0
+  final double thresholdSize;
+
   @override
   Widget build(BuildContext context) {
     return new LimitedBox(
@@ -206,7 +214,9 @@ class Sparkline extends StatelessWidget {
           gridLineAmount: gridLineAmount,
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
-          labelPrefix: labelPrefix
+          labelPrefix: labelPrefix,
+          enableThreshold: enableThreshold,
+          thresholdSize: thresholdSize
         ),
       ),
     );
@@ -231,7 +241,9 @@ class _SparklinePainter extends CustomPainter {
     this.gridLineAmount,
     this.gridLineWidth,
     this.gridLineLabelColor,
-    this.labelPrefix
+    this.labelPrefix,
+    @required this.enableThreshold,
+    this.thresholdSize
     })  : _max = dataPoints.reduce(math.max),
       _min = dataPoints.reduce(math.min);
 
@@ -260,6 +272,9 @@ class _SparklinePainter extends CustomPainter {
   final double gridLineWidth;
   final Color gridLineLabelColor;
   final String labelPrefix;
+
+  final bool enableThreshold;
+  final double thresholdSize;
 
   List<TextPainter> gridLineTextPainters = [];
 
@@ -296,7 +311,9 @@ class _SparklinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     double width = size.width - lineWidth;
     final double height = size.height - lineWidth;
-    final double heightNormalizer = height / (_max - _min);
+    final double heightNormalizer = 
+        (!enableThreshold) ? height / ((_max - _min) == 0 ? 1 : (_max - _min))
+        : (height - (height * thresholdSize)) / ((_max - _min) == 0 ? 1 : (_max - _min));
 
     final Path path = new Path();
     final List<Offset> points = <Offset>[];
@@ -315,7 +332,7 @@ class _SparklinePainter extends CustomPainter {
 
       double gridLineDist = height / (gridLineAmount - 1);
       double gridLineY;
-
+      
       // Draw grid lines
       for (int i = 0; i < gridLineAmount; i++) {
         gridLineY = (gridLineDist * i).round().toDouble();
@@ -328,13 +345,20 @@ class _SparklinePainter extends CustomPainter {
       }
     }
 
-    final double widthNormalizer = width / dataPoints.length;
+    final double widthNormalizer = width / (dataPoints.length - 1);
 
     for (int i = 0; i < dataPoints.length; i++) {
       double x = i * widthNormalizer + lineWidth / 2;
       double y =
-          height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2;
+          (!heightNormalizer.isInfinite) ? height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2
+          : height + lineWidth / 2;
 
+      if (enableThreshold) {
+        // y = (y - heightNormalizer) + ((lineWidth / 2) * dataPoints.length);
+        // y = (y - (heightNormalizer / dataPoints.length)) - (dataPoints.length * lineWidth);
+        y = (y - (height * thresholdSize));
+      }
+          
       if (pointsMode == PointsMode.all) {
         points.add(new Offset(x, y));
       }
@@ -367,12 +391,12 @@ class _SparklinePainter extends CustomPainter {
       Path fillPath = new Path()..addPath(path, Offset.zero);
       if (fillMode == FillMode.below) {
         fillPath.relativeLineTo(lineWidth / 2, 0.0);
-        fillPath.lineTo(size.width, size.height);
+        fillPath.lineTo(width + lineWidth / 2, size.height);
         fillPath.lineTo(0.0, size.height);
         fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       } else if (fillMode == FillMode.above) {
         fillPath.relativeLineTo(lineWidth / 2, 0.0);
-        fillPath.lineTo(size.width, 0.0);
+        fillPath.lineTo(width + lineWidth / 2, 0.0);
         fillPath.lineTo(0.0, 0.0);
         fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       }
@@ -418,6 +442,8 @@ class _SparklinePainter extends CustomPainter {
         gridLineColor != old.gridLineColor ||
         gridLineAmount != old.gridLineAmount ||
         gridLineWidth != old.gridLineWidth ||
-        gridLineLabelColor != old.gridLineLabelColor;
+        gridLineLabelColor != old.gridLineLabelColor || 
+        enableThreshold != old.enableThreshold || 
+        thresholdSize != old.thresholdSize;
   }
 }
