@@ -38,8 +38,16 @@ enum PointsMode {
 /// By default only the sparkline is drawn, with its looks defined by
 /// the [lineWidth], [lineColor], and [lineGradient] properties.
 ///
+/// The y-scale of the sparkline will be determined by using the [data]'s
+/// minimum and maximum value, unless overridden with [min] and/or [max].
+///
 /// The corners between two segments of the sparkline can be made sharper by
 /// setting [sharpCorners] to true.
+///
+/// Conversely, to smooth out the curve drawn even more, set [useCubicSmoothing]
+/// to true. The degree to which the cubic smoothing is applied can be changed
+/// using [cubicSmoothingFactor]. A good range for [cubicSmoothingFactor]
+/// is usually between 0.1 and 0.3.
 ///
 /// The area above or below the sparkline can be filled with the provided
 /// [fillColor] or [fillGradient] by setting the desired [fillMode].
@@ -63,6 +71,8 @@ class Sparkline extends StatelessWidget {
     this.pointSize = 4.0,
     this.pointColor = const Color(0xFF0277BD), //Colors.lightBlue[800]
     this.sharpCorners = false,
+    this.useCubicSmoothing = false,
+    this.cubicSmoothingFactor = 0.15,
     this.fillMode = FillMode.none,
     this.fillColor = const Color(0xFF81D4FA), //Colors.lightBlue[200]
     this.fillGradient,
@@ -74,6 +84,10 @@ class Sparkline extends StatelessWidget {
     this.gridLineWidth = 0.5,
     this.gridLineLabelColor = Colors.grey,
     this.labelPrefix = "\$",
+    this.max,
+    this.min,
+    this.enableThreshold = false,
+    this.thresholdSize = 0.3,
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
@@ -133,6 +147,20 @@ class Sparkline extends StatelessWidget {
   /// Defaults to false.
   final bool sharpCorners;
 
+  /// Determines if the sparkline path should use cubic beziers to smooth
+  /// the curve when drawing. Read more about the algorithm used, here:
+  ///
+  /// https://medium.com/@francoisromain/smooth-a-svg-path-with-cubic-bezier-curves-e37b49d46c74
+  ///
+  /// Defaults to false.
+  final bool useCubicSmoothing;
+
+  /// How aggressively the sparkline should apply cubic beziers to smooth
+  /// the curves. A good value is usually between 0.1 and 0.3.
+  ///
+  /// Defaults to 0.15.
+  final double cubicSmoothingFactor;
+
   /// Determines the area that should be filled with [fillColor].
   ///
   /// Defaults to [FillMode.none].
@@ -182,6 +210,20 @@ class Sparkline extends StatelessWidget {
   /// Symbol prefix for grid line labels
   final String labelPrefix;
 
+  /// The maximum value for the rendering box. Will default to the largest
+  /// value in [data].
+  final double max;
+
+  /// The minimum value for the rendering box. Will default to the largest
+  /// value in [data].
+  final double min;
+
+  /// Define if graph should have threshold
+  final bool enableThreshold;
+
+  /// size of default threshold (in Percent) 0.0 ~ 1.0
+  final double thresholdSize;
+
   @override
   Widget build(BuildContext context) {
     return new LimitedBox(
@@ -195,6 +237,8 @@ class Sparkline extends StatelessWidget {
           lineColor: lineColor,
           lineGradient: lineGradient,
           sharpCorners: sharpCorners,
+          useCubicSmoothing: useCubicSmoothing,
+          cubicSmoothingFactor: cubicSmoothingFactor,
           fillMode: fillMode,
           fillColor: fillColor,
           fillGradient: fillGradient,
@@ -206,7 +250,11 @@ class Sparkline extends StatelessWidget {
           gridLineAmount: gridLineAmount,
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
-          labelPrefix: labelPrefix
+          labelPrefix: labelPrefix,
+          max: max,
+          min: min,
+          enableThreshold: enableThreshold,
+          thresholdSize: thresholdSize
         ),
       ),
     );
@@ -220,6 +268,8 @@ class _SparklinePainter extends CustomPainter {
     @required this.lineColor,
     this.lineGradient,
     @required this.sharpCorners,
+    @required this.useCubicSmoothing,
+    @required this.cubicSmoothingFactor,
     @required this.fillMode,
     @required this.fillColor,
     this.fillGradient,
@@ -227,13 +277,17 @@ class _SparklinePainter extends CustomPainter {
     @required this.pointSize,
     @required this.pointColor,
     @required this.enableGridLines,
-    this.gridLineColor,
-    this.gridLineAmount,
-    this.gridLineWidth,
-    this.gridLineLabelColor,
-    this.labelPrefix
-    })  : _max = dataPoints.reduce(math.max),
-      _min = dataPoints.reduce(math.min);
+    @required this.gridLineColor,
+    @required this.gridLineAmount,
+    @required this.gridLineWidth,
+    @required this.gridLineLabelColor,
+    @required this.labelPrefix,
+    double max,
+    double min,
+    @required this.enableThreshold,
+    this.thresholdSize
+  })  : _max = max != null ? max : dataPoints.reduce(math.max),
+        _min = min != null ? min : dataPoints.reduce(math.min);
 
   final List<double> dataPoints;
 
@@ -242,6 +296,8 @@ class _SparklinePainter extends CustomPainter {
   final Gradient lineGradient;
 
   final bool sharpCorners;
+  final bool useCubicSmoothing;
+  final double cubicSmoothingFactor;
 
   final FillMode fillMode;
   final Color fillColor;
@@ -260,6 +316,9 @@ class _SparklinePainter extends CustomPainter {
   final double gridLineWidth;
   final Color gridLineLabelColor;
   final String labelPrefix;
+
+  final bool enableThreshold;
+  final double thresholdSize;
 
   List<TextPainter> gridLineTextPainters = [];
 
@@ -296,12 +355,13 @@ class _SparklinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     double width = size.width - lineWidth;
     final double height = size.height - lineWidth;
-    final double heightNormalizer = height / (_max - _min);
+    //final double heightNormalizer = height / (_max - _min);
+    final double heightNormalizer = 
+        (!enableThreshold) ? height / ((_max - _min) == 0 ? 1 : (_max - _min))
+        : (height - (height * thresholdSize)) / ((_max - _min) == 0 ? 1 : (_max - _min));
 
-    final Path path = new Path();
     final List<Offset> points = <Offset>[];
-
-    Offset startPoint;
+    final List<Offset> normalized = <Offset>[];
 
     if (gridLineTextPainters.isEmpty) {
       update();
@@ -328,26 +388,48 @@ class _SparklinePainter extends CustomPainter {
       }
     }
 
-    final double widthNormalizer = width / dataPoints.length;
+    final double widthNormalizer = width / (dataPoints.length - 1);
 
     for (int i = 0; i < dataPoints.length; i++) {
       double x = i * widthNormalizer + lineWidth / 2;
       double y =
-          height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2;
-
-      if (pointsMode == PointsMode.all) {
-        points.add(new Offset(x, y));
+          (!heightNormalizer.isInfinite) ? height - (dataPoints[i] - _min) * heightNormalizer + lineWidth / 2
+          : height + lineWidth / 2;
+      if (enableThreshold) {
+        // y = (y - heightNormalizer) + ((lineWidth / 2) * dataPoints.length);
+        // y = (y - (heightNormalizer / dataPoints.length)) - (dataPoints.length * lineWidth);
+        y = (y - (height * thresholdSize));
       }
+          
+      normalized.add(new Offset(x, y));
 
-      if (pointsMode == PointsMode.last && i == dataPoints.length - 1) {
-        points.add(new Offset(x, y));
+      if (pointsMode == PointsMode.all ||
+          (pointsMode == PointsMode.last && i == dataPoints.length - 1)) {
+        points.add(normalized[i]);
       }
+    }
 
-      if (i == 0) {
-        startPoint = new Offset(x, y);
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+    Offset startPoint = normalized[0];
+    final Path path = new Path();
+    path.moveTo(startPoint.dx, startPoint.dy);
+
+    if (useCubicSmoothing) {
+      Offset a = normalized[0];
+      Offset b = normalized[0];
+      Offset c = normalized[1];
+      for (int i = 1; i < normalized.length; i++) {
+        double x1 = (c.dx - a.dx) * cubicSmoothingFactor + b.dx;
+        double y1 = (c.dy - a.dy) * cubicSmoothingFactor + b.dy;
+        a = b;
+        b = c;
+        c = normalized[math.min(normalized.length - 1, i + 1)];
+        double x2 = (a.dx - c.dx) * cubicSmoothingFactor + b.dx;
+        double y2 = (a.dy - c.dy) * cubicSmoothingFactor + b.dy;
+        path.cubicTo(x1, y1, x2, y2, b.dx, b.dy);
+      }
+    } else {
+      for (int i = 1; i < normalized.length; i++) {
+        path.lineTo(normalized[i].dx, normalized[i].dy);
       }
     }
 
@@ -367,12 +449,12 @@ class _SparklinePainter extends CustomPainter {
       Path fillPath = new Path()..addPath(path, Offset.zero);
       if (fillMode == FillMode.below) {
         fillPath.relativeLineTo(lineWidth / 2, 0.0);
-        fillPath.lineTo(size.width, size.height);
+        fillPath.lineTo(width + lineWidth / 2, size.height);
         fillPath.lineTo(0.0, size.height);
         fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       } else if (fillMode == FillMode.above) {
         fillPath.relativeLineTo(lineWidth / 2, 0.0);
-        fillPath.lineTo(size.width, 0.0);
+        fillPath.lineTo(width + lineWidth / 2, 0.0);
         fillPath.lineTo(0.0, 0.0);
         fillPath.lineTo(startPoint.dx - lineWidth / 2, startPoint.dy);
       }
@@ -418,6 +500,9 @@ class _SparklinePainter extends CustomPainter {
         gridLineColor != old.gridLineColor ||
         gridLineAmount != old.gridLineAmount ||
         gridLineWidth != old.gridLineWidth ||
-        gridLineLabelColor != old.gridLineLabelColor;
+        gridLineLabelColor != old.gridLineLabelColor ||
+        useCubicSmoothing != old.useCubicSmoothing ||
+        enableThreshold != old.enableThreshold || 
+        thresholdSize != old.thresholdSize;
   }
 }
