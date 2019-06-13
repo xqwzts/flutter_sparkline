@@ -218,7 +218,7 @@ class Sparkline extends StatelessWidget {
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
           labelPrefix: labelPrefix,
-          OnGraphPaint: onGraphPaint
+          onGraphPaint: onGraphPaint
         ),
       ),
     );
