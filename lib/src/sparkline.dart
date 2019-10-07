@@ -360,6 +360,8 @@ class _SparklinePainter extends CustomPainter {
       if (i == 0) {
         startPoint = new Offset(x, y);
         path.moveTo(x, y);
+      } else if (i == dataPoints.length - 1) {
+        path.lineTo(size.width, y);
       } else {
         path.lineTo(x, y);
       }
