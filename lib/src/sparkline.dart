@@ -51,6 +51,13 @@ enum PointsMode {
 /// By default, the sparkline is sized to fit its container. If the
 /// sparkline is in an unbounded space, it will size itself according to the
 /// given [fallbackWidth] and [fallbackHeight].
+///
+/// By default, the sparkline is not paint anything after paint graph.
+/// If the [onGraphPaint] is set, then function draws additions
+///
+
+typedef OnGraphPaint = void Function(Canvas context, double width, double height);
+
 class Sparkline extends StatelessWidget {
   /// Creates a widget that represents provided [data] in a Sparkline chart.
   Sparkline({
@@ -74,6 +81,7 @@ class Sparkline extends StatelessWidget {
     this.gridLineWidth = 0.5,
     this.gridLineLabelColor = Colors.grey,
     this.labelPrefix = "\$",
+    this.onGraphPaint
   })  : assert(data != null),
         assert(lineWidth != null),
         assert(lineColor != null),
@@ -182,6 +190,9 @@ class Sparkline extends StatelessWidget {
   /// Symbol prefix for grid line labels
   final String labelPrefix;
 
+  /// Draw after paint of graph
+  final OnGraphPaint onGraphPaint;
+
   @override
   Widget build(BuildContext context) {
     return new LimitedBox(
@@ -206,7 +217,8 @@ class Sparkline extends StatelessWidget {
           gridLineAmount: gridLineAmount,
           gridLineLabelColor: gridLineLabelColor,
           gridLineWidth: gridLineWidth,
-          labelPrefix: labelPrefix
+          labelPrefix: labelPrefix,
+          onGraphPaint: onGraphPaint
         ),
       ),
     );
@@ -231,7 +243,8 @@ class _SparklinePainter extends CustomPainter {
     this.gridLineAmount,
     this.gridLineWidth,
     this.gridLineLabelColor,
-    this.labelPrefix
+    this.labelPrefix,
+    this.onGraphPaint
     })  : _max = dataPoints.reduce(math.max),
       _min = dataPoints.reduce(math.min);
 
@@ -260,6 +273,7 @@ class _SparklinePainter extends CustomPainter {
   final double gridLineWidth;
   final Color gridLineLabelColor;
   final String labelPrefix;
+  final OnGraphPaint onGraphPaint;
 
   List<TextPainter> gridLineTextPainters = [];
 
@@ -346,6 +360,8 @@ class _SparklinePainter extends CustomPainter {
       if (i == 0) {
         startPoint = new Offset(x, y);
         path.moveTo(x, y);
+      } else if (i == dataPoints.length - 1) {
+        path.lineTo(size.width, y);
       } else {
         path.lineTo(x, y);
       }
@@ -398,6 +414,10 @@ class _SparklinePainter extends CustomPainter {
         ..strokeWidth = pointSize
         ..color = pointColor;
       canvas.drawPoints(ui.PointMode.points, points, pointsPaint);
+    }
+
+    if (onGraphPaint!=null) {
+      onGraphPaint(canvas, width, height);
     }
   }
 
