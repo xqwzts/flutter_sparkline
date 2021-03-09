@@ -296,7 +296,7 @@ class _SparklinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     double width = size.width - lineWidth;
     final double height = size.height - lineWidth;
-    final double heightNormalizer = height / (_max - _min);
+    final double heightNormalizer = height / (_max == _min ? height : _max - _min);
 
     final Path path = new Path();
     final List<Offset> points = <Offset>[];
